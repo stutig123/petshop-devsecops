@@ -29,11 +29,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@master
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=stutig123_petshop-devsecops \
+            -Dsonar.organization=stutig123-org \
+            -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
 
   build_and_test:
     name: Build and Test
