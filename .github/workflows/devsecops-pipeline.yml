@@ -1,4 +1,4 @@
-name: PetShop DevSecOps Pipeline
+name: DevSecOps CI/CD Pipeline
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   security_scan:
-    name: Trivy Security Scan
+    name: Security Scan (Trivy)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
           scan-ref: .
 
   code_quality:
-    name: SonarQube Code Analysis
+    name: Code Quality Check (SonarQube)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -58,5 +58,8 @@ jobs:
     needs: [security_scan, code_quality, build_and_test]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Deploying...
         run: echo "Deploying the application"
