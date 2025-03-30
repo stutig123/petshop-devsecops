@@ -22,7 +22,7 @@ jobs:
           scan-type: fs
           scan-ref: .
 
-  code_quality:
+    code_quality:
     name: Code Quality Check (SonarQube)
     runs-on: ubuntu-latest
     steps:
@@ -35,14 +35,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Install SonarQube Scanner
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+          unzip sonar-scanner.zip
+          echo "$(pwd)/sonar-scanner-4.6.2.2472-linux/bin" >> $GITHUB_PATH
+
       - name: SonarQube Scan
         run: |
           sonar-scanner \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
-            -Dsonar.organization=stutig123-org \
+            -Dsonar.organization=stutig123 \
             -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
 
   build_and_test:
     name: Build and Test
@@ -62,7 +70,7 @@ jobs:
       - name: Run Tests
         run: npm test
 
-  deploy:
+    deploy:
     name: Deploy to AWS
     needs: [security_scan, code_quality, build_and_test]
     runs-on: ubuntu-latest
@@ -70,5 +78,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploying...
-        run: echo "Deploying the application"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Change to your AWS region
+
+      - name: Deploy to AWS S3 (Example)
+        run: aws s3 sync . s3://your-bucket-name --delete
