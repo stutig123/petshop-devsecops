@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Pet Store</title>
+    <link rel="stylesheet" href="styles.css">  <!-- Added CSS file link here -->
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <h2>My Pet Store</h2>
+
+    <div id="auth-section">
+        <h3>Register</h3>
+        <input type="text" id="register-username" placeholder="Username">
+        <input type="password" id="register-password" placeholder="Password">
+        <select id="register-role">
+            <option value="user">User</option>
+            <option value="manager">Manager</option>
+        </select>
+        <button onclick="registerUser()">Register</button>
+
+        <h3>Login</h3>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="loginUser()">Login</button>
+    </div>
+
+    <div id="dashboard" style="display: none;">
+        <h3>Dashboard</h3>
+        <button onclick="logout()">Logout</button>
+
+        <div id="add-pet-section" style="display: none;">
+            <h3>Add Pet</h3>
+            <input type="text" id="pet-name" placeholder="Pet Name">
+            <input type="text" id="pet-type" placeholder="Pet Type">
+            <input type="number" id="pet-price" placeholder="Price">
+            <input type="file" id="pet-image" accept="image/*"> <!-- Image Upload -->
+            <button onclick="addPet()">Add Pet</button>
+        </div>
+
+        <div id="buy-pet-section">
+            <h3>Available Pets</h3>
+            <ul id="pets-list"></ul>
+        </div>
+
+        <!-- Invoice download section -->
+        <div id="invoice-container"></div>
+    </div>
+</body>
+
+</html>
