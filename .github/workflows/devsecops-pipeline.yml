@@ -41,6 +41,10 @@ jobs:
           unzip sonar-scanner.zip
           mv sonar-scanner-4.6.2.2472-linux sonar-scanner
           echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Persist PATH correctly
+        shell: bash
+
+      - name: Verify SonarQube Installation
+        run: sonar-scanner --version  # Check if sonar-scanner is installed correctly
 
       - name: Run SonarQube Scan
         run: |
