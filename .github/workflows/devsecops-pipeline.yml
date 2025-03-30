@@ -40,17 +40,18 @@ jobs:
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
           unzip sonar-scanner.zip
           mv sonar-scanner-4.6.2.2472-linux sonar-scanner
-          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Persist PATH correctly
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add SonarQube Scanner to PATH
+          echo "SONAR_SCANNER_PATH=$(pwd)/sonar-scanner/bin" >> $GITHUB_ENV  # Persist path for later steps
         shell: bash
 
       - name: Verify SonarQube Installation
-        run: sonar-scanner --version  # Check if sonar-scanner is installed correctly
+        run: sonar-scanner --version  # Ensure sonar-scanner is installed correctly
 
       - name: Run SonarQube Scan
         run: |
           sonar-scanner \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
-            -Dsonar.organization=stutig123 \
+            -Dsonar.organization=stutig123-org \
             -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
