@@ -10,6 +10,9 @@ RUN npm ci --only=production  # Installs only production dependencies
 # Copy application source code
 COPY . .
 
+# **Run the build process (if needed for dist folder)**
+RUN npm run build  # Ensure the build step generates the dist folder
+
 # Remove unnecessary dev dependencies
 RUN npm prune --production  
 
