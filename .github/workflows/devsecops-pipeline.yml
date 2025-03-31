@@ -142,4 +142,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: stutig123/petshop-devsecops:latest
+        tags: stutigambhir/petshop-devsecops:latest
