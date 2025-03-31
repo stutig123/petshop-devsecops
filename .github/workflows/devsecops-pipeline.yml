@@ -28,10 +28,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18  # Install Node.js 18 (or latest stable)
+          node-version: 18
 
       - name: Verify Node.js Installation
-        run: node -v  # Ensure Node.js is installed correctly
+        run: |
+          echo "Node.js version:"
+          node -v
+          echo "NPM version:"
+          npm -v
+
+      - name: Add Node.js to PATH
+        run: echo "$NODEJS_HOME/bin" >> $GITHUB_PATH
 
       - name: Install SonarQube Scanner
         run: |
@@ -46,6 +53,9 @@ jobs:
 
       - name: Run SonarQube Scan
         run: |
+          echo "Checking Node.js version before SonarQube scan..."
+          which node
+          node -v
           sonar-scanner \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
             -Dsonar.organization=stutig123 \
