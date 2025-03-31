@@ -25,6 +25,14 @@ jobs:
       - name: Verify Java Version
         run: java -version  # Should output Java 17
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18  # Install Node.js 18 (or latest stable)
+
+      - name: Verify Node.js Installation
+        run: node -v  # Ensure Node.js is installed correctly
+
       - name: Install SonarQube Scanner
         run: |
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
