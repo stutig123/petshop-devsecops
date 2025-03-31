@@ -4,25 +4,67 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const path = require("path");
-const PDFDocument = require("pdfkit");
 
 const app = express();
 const PORT = 3000;
 
+// ✅ Ensure essential folders exist
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
+if (!fs.existsSync("data")) fs.mkdirSync("data");
+
+// ✅ Ensure pets.json exists
+const PETS_FILE = "data/pets.json";
+if (!fs.existsSync(PETS_FILE)) fs.writeFileSync(PETS_FILE, "[]", "utf-8");
+
+// ✅ Ensure users.json exists
+const USERS_FILE = "data/users.json";
+if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, "[]", "utf-8");
+
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // ✅ Fix image serving
 
-const USERS_FILE = "data/users.json";
-const PETS_FILE = "data/pets.json";
+// ✅ Load Users
+const loadUsers = () => {
+    try {
+        return JSON.parse(fs.readFileSync(USERS_FILE, "utf-8")) || [];
+    } catch (error) {
+        console.error("❌ Error reading users.json:", error);
+        return [];
+    }
+};
 
-const loadUsers = () => JSON.parse(fs.readFileSync(USERS_FILE, "utf-8")) || [];
-const saveUsers = (users) => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+// ✅ Save Users
+const saveUsers = (users) => {
+    try {
+        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf-8");
+        console.log("✅ users.json updated successfully!");
+    } catch (error) {
+        console.error("❌ Error saving users.json:", error);
+    }
+};
 
-const loadPets = () => JSON.parse(fs.readFileSync(PETS_FILE, "utf-8")) || [];
-const savePets = (pets) => fs.writeFileSync(PETS_FILE, JSON.stringify(pets, null, 2));
+// ✅ Load Pets
+const loadPets = () => {
+    try {
+        return JSON.parse(fs.readFileSync(PETS_FILE, "utf-8")) || [];
+    } catch (error) {
+        console.error("❌ Error reading pets.json:", error);
+        return [];
+    }
+};
 
-// Multer setup for image uploads
+// ✅ Save Pets
+const savePets = (pets) => {
+    try {
+        fs.writeFileSync(PETS_FILE, JSON.stringify(pets, null, 2), "utf-8");
+        console.log("✅ pets.json updated successfully!");
+    } catch (error) {
+        console.error("❌ Error saving pets.json:", error);
+    }
+};
+
+// ✅ Multer Setup for Image Uploads
 const storage = multer.diskStorage({
     destination: "uploads/",
     filename: (req, file, cb) => {
@@ -101,24 +143,10 @@ app.post("/buy-pet", (req, res) => {
         return res.status(404).json({ message: "Pet not found" });
     }
 
-    const pet = pets.splice(petIndex, 1)[0];
+    pets.splice(petIndex, 1);
     savePets(pets);
 
-    // Generate Invoice
-    const invoicePath = `invoices/invoice_${Date.now()}.pdf`;
-    const doc = new PDFDocument();
-    doc.pipe(fs.createWriteStream(invoicePath));
-
-    doc.fontSize(20).text("Pet Store Invoice", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14).text(`Buyer: ${username}`);
-    doc.text(`Pet: ${pet.petName}`);
-    doc.text(`Type: ${pet.petType}`);
-    doc.text(`Price: $${pet.price}`);
-    doc.text(`Date: ${new Date().toLocaleString()}`);
-    doc.end();
-
-    res.json({ message: "Pet purchased successfully!", invoiceUrl: `/${invoicePath}` });
+    res.json({ message: "Pet purchased successfully!" });
 });
 
 // ✅ Get Pets
@@ -128,5 +156,5 @@ app.get("/pets", (req, res) => {
 
 // ✅ Start Server
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });

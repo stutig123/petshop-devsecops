@@ -1,31 +1,23 @@
-# Base image for building dependencies
-FROM node:18-alpine as builder
-
+# Stage 1: Install dependencies
+FROM node:18-alpine AS build
 WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci --only=production  # Installs only production dependencies
+RUN npm ci --only=production
+
+# Stage 2: Production Image
+FROM node:18-alpine
+WORKDIR /app
+
+# Copy installed dependencies from build stage
+COPY --from=build /app/node_modules ./node_modules
 
 # Copy application source code
 COPY . .
 
-# **Run the build process (if needed for dist folder)**
-RUN npm run build  # Ensure the build step generates the dist folder
-
-# Remove unnecessary dev dependencies
-RUN npm prune --production  
-
-# Production image
-FROM node:18-alpine
-
-WORKDIR /app
-
-# Copy only necessary files from builder stage
-COPY --from=builder /app/package*.json ./ 
-COPY --from=builder /app/node_modules ./node_modules 
-COPY --from=builder /app/dist ./dist  # Ensure the app build is included
-COPY --from=builder /app/ ./ 
+# Set a non-root user for security
+USER node
 
 # Expose application port
 EXPOSE 3000

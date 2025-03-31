@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1743409840519,
+    "petName": "fluffy",
+    "petType": "cat",
+    "price": "78",
+    "imageUrl": "/uploads/1743409840496.jpg"
+  },
+  {
+    "id": 1743409871839,
+    "petName": "fluffy",
+    "petType": "cat",
+    "price": "78",
+    "imageUrl": "/uploads/1743409871810.jpg"
+  }
+]
