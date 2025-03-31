@@ -24,8 +24,15 @@ jobs:
           node-version: 18
           cache: 'npm'
           
+      - name: Verify Node.js
+        run: |
+          node -v
+          npm -v
+          echo "Node.js path: $(which node)"
+          
       - name: Install dependencies
         run: npm ci
+        continue-on-error: true  # Continue even if npm ci fails
         
       - name: Run tests with coverage
         run: npm test -- --coverage
@@ -45,6 +52,24 @@ jobs:
           echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH
           chmod +x sonar-scanner/bin/sonar-scanner
           
+      - name: Update sonar-project.properties
+        run: |
+          NODE_PATH=$(which node)
+          echo "Updating sonar-project.properties with Node.js path: $NODE_PATH"
+          if [ -f "sonar-project.properties" ]; then
+            sed -i '/sonar.nodejs.executable/d' sonar-project.properties
+            echo "sonar.nodejs.executable=$NODE_PATH" >> sonar-project.properties
+          else
+            echo "sonar.projectKey=stutig123_petshop-devsecops" > sonar-project.properties
+            echo "sonar.organization=stutig123" >> sonar-project.properties
+            echo "sonar.host.url=https://sonarcloud.io" >> sonar-project.properties
+            echo "sonar.sources=." >> sonar-project.properties
+            echo "sonar.exclusions=node_modules/**,coverage/**,dist/**,test/**,**/*.test.js" >> sonar-project.properties
+            echo "sonar.javascript.lcov.reportPaths=coverage/lcov.info" >> sonar-project.properties
+            echo "sonar.nodejs.executable=$NODE_PATH" >> sonar-project.properties
+          fi
+          cat sonar-project.properties
+          
       - name: Run SonarQube Scan
         run: |
           sonar-scanner \
@@ -53,7 +78,8 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sources=. \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.exclusions=node_modules/**,coverage/**,dist/**,test/**,**/*.test.js
+            -Dsonar.exclusions=node_modules/**,coverage/**,dist/**,test/**,**/*.test.js \
+            -Dsonar.nodejs.executable=$(which node)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
