@@ -21,18 +21,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: maven
 
-      - name: Verify Java Version
-        run: java -version  # Ensure Java 17 is correctly installed
+      - name: Verify Java Installation
+        run: java -version  # Ensure Java 17 is installed
 
       - name: Install SonarQube Scanner
         run: |
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
           unzip sonar-scanner.zip
           mv sonar-scanner-4.6.2.2472-linux sonar-scanner
-          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Persist PATH correctly
-          echo "SONAR_SCANNER_PATH=$(pwd)/sonar-scanner/bin" >> $GITHUB_ENV  # Persist for later steps
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add SonarScanner to PATH
 
       - name: Verify SonarQube Installation
         run: sonar-scanner --version  # Check if sonar-scanner is installed correctly
@@ -42,6 +40,10 @@ jobs:
           sonar-scanner \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
             -Dsonar.organization=stutig123 \
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.sources=. \
+            -Dsonar.language=js \
+            -Dsonar.exclusions=node_modules/**,dist/** \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
