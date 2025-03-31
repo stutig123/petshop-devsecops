@@ -46,20 +46,33 @@ jobs:
           export PATH="$(pwd)/sonar-scanner/bin:$PATH"
 
       - name: Verify SonarQube Installation
-        run: sonar-scanner --version  # Check if SonarScanner is installed correctly
+        run: |
+          echo "Checking SonarScanner path..."
+          which sonar-scanner
+          echo "SonarScanner version:"
+          sonar-scanner --version
+
+      - name: Check SONAR_TOKEN
+        run: echo "Checking if SONAR_TOKEN is set..."
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Check coverage file
+        run: ls -l coverage/lcov.info
+
+      - name: Clear node_modules
+        run: rm -rf node_modules
 
       - name: Run SonarQube Scan with debug logs
         run: |
-          echo "Checking Node.js version before SonarQube scan..."
-          which node
-          node -v
-          sonar-scanner \
+          sonar-scanner -X \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
             -Dsonar.organization=stutig123 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sources=. \
             -Dsonar.language=js \
             -Dsonar.exclusions=node_modules/**,dist/** \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.nodejs.executable=$(which node)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
