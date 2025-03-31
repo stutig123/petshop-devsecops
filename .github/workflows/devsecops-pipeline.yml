@@ -22,18 +22,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Verify Java Installation
-        run: java -version  # Ensure Java 17 is installed
+      - name: Verify Java Version
+        run: java -version  # Should output Java 17
 
       - name: Install SonarQube Scanner
         run: |
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner.zip
-          mv sonar-scanner-4.6.2.2472-linux sonar-scanner
+          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
           echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add SonarScanner to PATH
+          echo "SONAR_SCANNER_OPTS=-Djava.home=$(dirname $(dirname $(which java)))" >> $GITHUB_ENV  # Force Java 17
 
       - name: Verify SonarQube Installation
-        run: sonar-scanner --version  # Check if sonar-scanner is installed correctly
+        run: sonar-scanner --version  # Check if SonarScanner is installed correctly
 
       - name: Run SonarQube Scan
         run: |
