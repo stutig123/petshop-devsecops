@@ -23,7 +23,7 @@ jobs:
           java-version: '17'
 
       - name: Verify Java Version
-        run: java -version  # Should output Java 17
+        run: java -version
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -32,30 +32,33 @@ jobs:
 
       - name: Verify Node.js Installation
         run: |
-          echo "Node.js version:"
           node -v
-          echo "NPM version:"
           npm -v
-
-      - name: Add Node.js to PATH
-        run: echo "$NODEJS_HOME/bin" >> $GITHUB_PATH
 
       - name: Install SonarQube Scanner
         run: |
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner.zip
           mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add SonarScanner to PATH
-          echo "SONAR_SCANNER_OPTS=-Djava.home=$(dirname $(dirname $(which java)))" >> $GITHUB_ENV  # Force Java 17
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH
+          echo "SONAR_SCANNER_OPTS=-Djava.home=$(dirname $(dirname $(which java)))" >> $GITHUB_ENV
+          chmod +x sonar-scanner/bin/sonar-scanner
+          export PATH="$(pwd)/sonar-scanner/bin:$PATH"
 
       - name: Verify SonarQube Installation
-        run: sonar-scanner --version  # Check if SonarScanner is installed correctly
+        run: |
+          echo "Checking SonarScanner path..."
+          which sonar-scanner
+          echo "SonarScanner version:"
+          sonar-scanner --version
+
+      - name: Check SONAR_TOKEN
+        run: echo "Checking if SONAR_TOKEN is set..."
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Run SonarQube Scan
         run: |
-          echo "Checking Node.js version before SonarQube scan..."
-          which node
-          node -v
           sonar-scanner \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
             -Dsonar.organization=stutig123 \
@@ -63,6 +66,7 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.language=js \
             -Dsonar.exclusions=node_modules/**,dist/** \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.nodejs.executable=$(which node) # added line.
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
