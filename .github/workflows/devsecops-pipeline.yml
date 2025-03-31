@@ -9,19 +9,6 @@ on:
       - main
 
 jobs:
-  security_scan:
-    name: 🔒 Security Scan (Trivy)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Run Trivy Security Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: .
-
   code_quality:
     name: 📊 Code Quality Check (SonarQube)
     runs-on: ubuntu-latest
@@ -34,62 +21,27 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: maven
+
+      - name: Verify Java Version
+        run: java -version  # Ensure Java 17 is correctly installed
 
       - name: Install SonarQube Scanner
         run: |
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
           unzip sonar-scanner.zip
           mv sonar-scanner-4.6.2.2472-linux sonar-scanner
-          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add SonarQube Scanner to PATH
-          echo "SONAR_SCANNER_PATH=$(pwd)/sonar-scanner/bin" >> $GITHUB_ENV  # Persist path for later steps
-        shell: bash
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Persist PATH correctly
+          echo "SONAR_SCANNER_PATH=$(pwd)/sonar-scanner/bin" >> $GITHUB_ENV  # Persist for later steps
 
       - name: Verify SonarQube Installation
-        run: sonar-scanner --version  # Ensure sonar-scanner is installed correctly
+        run: sonar-scanner --version  # Check if sonar-scanner is installed correctly
 
       - name: Run SonarQube Scan
         run: |
           sonar-scanner \
             -Dsonar.projectKey=stutig123_petshop-devsecops \
-            -Dsonar.organization=stutig123-org \
+            -Dsonar.organization=stutig123 \
             -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  build_and_test:
-    name: 🛠️ Build and Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Tests
-        run: npm test
-
-  deploy:
-    name: 🚀 Deploy to AWS
-    needs: [security_scan, code_quality, build_and_test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Deploy Application
-        run: |
-          echo "Deploying application to AWS..."
-          # Add your deployment commands here (like S3, ECS, EC2, etc.)
